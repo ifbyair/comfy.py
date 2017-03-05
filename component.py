@@ -8,12 +8,11 @@ from threading import Thread
 
 class Component(Thread):
     """
-    Base class for any component.
+    Base class for any component, not for instantiation.
     """
 
-    def __init__(self,threadID):
+    def __init__(self):
         Thread.__init__(self)
-        self.threadID = threadID
         self.inbox  = Queue()
         self.outbox = Queue()
 
@@ -27,3 +26,13 @@ class Component(Thread):
     def send_down(self,msg):
         """ Send a message to the Component """
         self.inbox.put(msg)
+
+    def check_inbox(self):
+        """ Check inbox for messages """
+        return not self.inbox.empty()
+
+    def check_outbox(self):
+        return not self.outbox.empty()
+
+    def get_message(self):
+        return self.outbox.get()

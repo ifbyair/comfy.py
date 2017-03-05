@@ -3,10 +3,10 @@
 
 import os
 import sys
-import Queue
-import threading
+import time
+from iomngr import IOMngr
 
-print("Hello World!")
+IOComponent = 0
 
 class Hub():
     """
@@ -17,22 +17,40 @@ class Hub():
     3. TBD
     """
 
-    components = []
+    def __init__(self):
+        self.components = []
 
-    def __init__(self,queue):
-        self.queue = queue
+    def add_component(self,purpose,c):
+        purpose = len(self.components)
+        self.components.append(c)
 
-    def add_component(c):
-        components.append(c)
+    def start(self):
+        for c in self.components:
+            c.setDaemon(True)
+            c.start()
 
     def main_loop(self):
-        pass
+        while (True):
+            for c in self.components:
+                if( c.check_outbox()):
+                    self.proc_msg(c.get_message())
+
+    def proc_msg(self,msg):
+        if( msg == "exit"):
+            sys.exit(0)
+        elif( msg == "heartbeat"):
+            self.components[IOComponent].send_down("heartbeat received")
+        else:
+            self.components[IOComponent].send_down("not sure what you want me to do")
+
+    def setIOcomponent(self,io_index):
+        self.io_index = io_index
+
 
 if __name__ == "__main__":
-    main_queue = Queue.Queue()
-    shell = Hub(main_queue)
+    shell = Hub()
 
-    shell.add_component(IoMngr())
+    shell.add_component(IOComponent,IOMngr())
 
     shell.start()
     shell.main_loop()
