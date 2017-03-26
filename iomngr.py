@@ -4,12 +4,14 @@
 import os
 import sys
 from queue import Queue
+import select
 from threading import Thread
 from component import Component
-import select
+from component import ComponentType
+from message import Message
+from message import MessageType
 
 timeout = 0.1 # seconds
-# last_work_time = time.time()
 
 class IOMngr(Component):
     """
@@ -17,7 +19,7 @@ class IOMngr(Component):
     """
 
     def __init__(self):
-        Component.__init__(self)
+        Component.__init__(self,ComponentType.IOMANAGER)
         self.prompt = "main > "
 
     def run(self):
@@ -29,12 +31,13 @@ class IOMngr(Component):
     				for f in ready:
     					uinput = f.readline().rstrip()
     					if( uinput ):
-    						self.send_up(uinput)
+    						self.send_up(Message(self.signature,MessageType.USER_INPUT,uinput))
     				self.print_prompt()
     			else:
     				if( self.check_inbox()):
     					self.proc_msg(self.inbox.get())
     					self.print_prompt()
+    				self.send_heartbeat()
     		except KeyboardInterrupt:
     			print("Type \"exit\" if you would like to finish")
     			self.print_prompt()
@@ -44,3 +47,6 @@ class IOMngr(Component):
 
     def print_prompt(self):
     	print(self.prompt,end="",flush=True)
+
+    def set_prompt(self,prompt):
+    	self.prompt = prompt
